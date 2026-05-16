@@ -1,0 +1,971 @@
+<!doctype html>
+<html lang="th">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบสถิติการมาเรียน</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Noto Sans Thai', sans-serif; background:#f8fafc; color:#0f172a; }
+    .vh-full { min-height: calc(100 * min(var(--vh, 1vh), 1vh)); }
+    .tab-active { border-bottom: 3px solid #0d9488; color: #0d9488; font-weight: 600; }
+    .canva-header { background: linear-gradient(135deg, #0d9488, #0f766e); }
+    .canva-card { background: #ffffff; border: 1px solid #e5e7eb; }
+    .canva-button { background: #0d9488; color: #ffffff; box-shadow: 0 2px 8px rgba(13,148,136,.25); }
+    .canva-button:hover { background:#0f766e; }
+    .canva-button:disabled { background:#94a3b8; cursor:not-allowed; }
+  </style>
+ </head>
+ <body data-template-id="__page-root" class="vh-full w-full">
+
+  <!-- Top Navigation -->
+  <div class="w-full max-w-6xl mx-auto px-4 pt-4">
+    <a href="./JP_Smart_Dashboard.html"
+       class="inline-flex items-center gap-2 rounded-2xl bg-white border border-slate-200 shadow-sm px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
+      🏠 โฮม
+    </a>
+  </div>
+
+  <header data-template-id="header-bg" class="canva-header py-5 px-6 shadow-md">
+   <div class="max-w-4xl mx-auto flex items-center justify-between gap-3">
+    <div class="flex items-center gap-3">
+     <div class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-white text-2xl shrink-0">🏫</div>
+     <h1 data-template-id="app-title" class="canva-text font-bold text-white text-lg md:text-xl leading-tight">ระบบสถิติการมาเรียน<br><span class="text-sm md:text-base font-medium">โรงเรียนอนุบาลจุมพลโพนพิสัย</span><br><span class="text-xs md:text-sm font-normal">สำนักงานเขตพื้นที่การศึกษาประถมศึกษาหนองคาย เขต 2</span></h1>
+    </div>
+    <p data-template-id="credit-text" class="canva-text text-white text-xs font-medium opacity-90">ครูฟักทอง ผู้จัดทำระบบ</p>
+   </div>
+  </header>
+  <nav class="max-w-4xl mx-auto px-4 md:px-6 pt-4">
+   <div class="flex gap-1 border-b border-gray-200"><button onclick="switchTab('record')" id="tab-record" class="px-4 py-2 text-sm tab-active">📝 บันทึก</button> <button onclick="switchTab('classrooms')" id="tab-classrooms" class="px-4 py-2 text-sm text-gray-500">🏫 ห้องเรียน</button> <button onclick="switchTab('list')" id="tab-list" class="px-4 py-2 text-sm text-gray-500">📊 รายการ</button>
+   </div>
+  </nav>
+  <main class="max-w-4xl mx-auto p-4 md:p-6 space-y-6"><!-- Tab: Record -->
+   <section id="panel-record" data-template-id="form-card" class="canva-card rounded-2xl shadow-lg p-5 md:p-6">
+    <h2 data-template-id="form-heading" class="canva-text font-semibold mb-4 text-lg">บันทึกสถิติการมาเรียน</h2>
+    <form id="attendance-form" class="space-y-4">
+     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div><label data-template-id="label-class" class="canva-text block text-sm font-medium mb-1" for="class_name">ห้องเรียน</label> <select id="class_name" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-400 outline-none"> <option value="">-- เลือกห้องเรียน --</option> </select>
+      </div>
+      <div><label data-template-id="label-teacher" class="canva-text block text-sm font-medium mb-1" for="teacher_display">ครูประจำชั้น</label> <input id="teacher_display" type="text" readonly class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 text-gray-600 outline-none" placeholder="เลือกห้องเรียนก่อน">
+      </div>
+      <div><label data-template-id="label-date" class="canva-text block text-sm font-medium mb-1" for="att_date">วันที่</label> <input id="att_date" type="date" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-400 outline-none">
+      </div>
+     </div>
+     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div><label data-template-id="label-boys-total" class="canva-text block text-sm font-medium mb-1" for="boys_total">ชายทั้งหมด</label> <input id="boys_total" type="number" min="0" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-400 outline-none" oninput="validateAttendance()"> <span id="error-boys" class="text-xs text-red-600 hidden mt-1">จำนวนมาเรียนต้องไม่เกินจำนวนเต็ม</span>
+      </div>
+      <div><label data-template-id="label-boys-present" class="canva-text block text-sm font-medium mb-1" for="boys_present">ชายมาเรียน</label> <input id="boys_present" type="number" min="0" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-400 outline-none" oninput="validateAttendance()">
+      </div>
+      <div><label data-template-id="label-girls-total" class="canva-text block text-sm font-medium mb-1" for="girls_total">หญิงทั้งหมด</label> <input id="girls_total" type="number" min="0" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-400 outline-none" oninput="validateAttendance()"> <span id="error-girls" class="text-xs text-red-600 hidden mt-1">จำนวนมาเรียนต้องไม่เกินจำนวนเต็ม</span>
+      </div>
+      <div><label data-template-id="label-girls-present" class="canva-text block text-sm font-medium mb-1" for="girls_present">หญิงมาเรียน</label> <input id="girls_present" type="number" min="0" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-400 outline-none" oninput="validateAttendance()">
+      </div>
+     </div>
+     <div id="validation-error" class="hidden bg-red-50 border border-red-300 rounded-lg px-4 py-3 text-sm text-red-700"></div>
+     <div class="flex items-center gap-3"><button data-template-id="submit-btn" type="submit" class="canva-button px-5 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 transition-transform active:scale-95">💾 บันทึกข้อมูล</button> <span id="form-status" class="text-sm hidden"></span>
+     </div>
+    </form>
+   </section><!-- Tab: Classrooms -->
+   <section id="panel-classrooms" class="hidden">
+    <div data-template-id="classroom-card" class="canva-card rounded-2xl shadow-lg p-5 md:p-6">
+     <h2 data-template-id="classroom-heading" class="canva-text font-semibold mb-4 text-lg">จัดการห้องเรียน</h2>
+     <div class="flex flex-col sm:flex-row gap-2 mb-4"><input id="new-classroom" type="text" placeholder="ชื่อห้องเรียน" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-400 outline-none"> <input id="new-classroom-teacher" type="text" placeholder="ครูประจำชั้น" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-400 outline-none"> <button onclick="addClassroom()" data-template-id="add-classroom-btn" class="canva-button px-4 py-2 rounded-lg text-sm font-semibold transition-transform active:scale-95 whitespace-nowrap">➕ เพิ่มห้องเรียน</button>
+     </div>
+     <div id="classroom-list" class="space-y-2"></div>
+     <p id="classroom-empty" class="text-gray-400 text-sm text-center py-4">ยังไม่มีข้อมูลห้องเรียน</p>
+    </div>
+   </section><!-- Tab: List/Records -->
+   <section id="panel-list" class="hidden">
+    <div data-template-id="table-card" class="canva-card rounded-2xl shadow-lg p-5 md:p-6">
+     <h2 data-template-id="table-heading" class="canva-text font-semibold mb-4 text-lg">รายการและสรุปสถิติ</h2>
+     <div class="flex flex-wrap gap-3 mb-4 items-end">
+      <div><label data-template-id="filter-date-label" class="canva-text block text-xs font-medium mb-1" for="filter-date">กรองวันที่</label> <input id="filter-date" type="date" class="border border-gray-300 rounded-lg px-2 py-1.5 text-sm">
+      </div>
+      <div><label data-template-id="filter-class-label" class="canva-text block text-xs font-medium mb-1" for="filter-class">กรองห้องเรียน</label> <select id="filter-class" class="border border-gray-300 rounded-lg px-2 py-1.5 text-sm"><option value="">ทั้งหมด</option></select>
+      </div><button onclick="applyFilters()" class="px-3 py-1.5 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700">กรอง</button> <button onclick="clearFilters()" class="px-3 py-1.5 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300">ล้าง</button> <button onclick="refreshData()" id="refresh-btn" class="px-3 py-1.5 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700 flex items-center gap-2"><i data-lucide="rotate-cw" class="w-4 h-4"></i>รีเฟรช</button> <button onclick="exportToPDF()" class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700">พิมพ์รายงาน PDF</button>
+     </div>
+     <div id="empty-state" class="text-center py-10">
+      <div class="w-16 h-16 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center"><i data-lucide="clipboard-list" class="w-7 h-7 text-gray-400"></i>
+      </div>
+      <p data-template-id="empty-text" class="canva-text text-gray-500">ยังไม่มีข้อมูลการมาเรียน</p>
+     </div>
+     <div id="stats-card" class="hidden bg-gradient-to-r from-teal-50 to-cyan-50 rounded-xl p-6 mb-6 border border-teal-200">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+       <div class="bg-white rounded-lg p-4 shadow-sm">
+        <p class="text-xs text-gray-500 font-medium mb-1">ชายทั้งหมด</p>
+        <p id="stat-boys-total" class="text-2xl font-bold text-teal-600">-</p>
+       </div>
+       <div class="bg-white rounded-lg p-4 shadow-sm">
+        <p class="text-xs text-gray-500 font-medium mb-1">ชายมาจริง</p>
+        <p id="stat-boys-present" class="text-2xl font-bold text-blue-600">-</p>
+       </div>
+       <div class="bg-white rounded-lg p-4 shadow-sm">
+        <p class="text-xs text-gray-500 font-medium mb-1">หญิงทั้งหมด</p>
+        <p id="stat-girls-total" class="text-2xl font-bold text-rose-600">-</p>
+       </div>
+       <div class="bg-white rounded-lg p-4 shadow-sm">
+        <p class="text-xs text-gray-500 font-medium mb-1">หญิงมาจริง</p>
+        <p id="stat-girls-present" class="text-2xl font-bold text-pink-600">-</p>
+       </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+       <div class="bg-white rounded-lg p-5 shadow-sm">
+        <p class="text-xs text-gray-500 font-medium mb-3">นักเรียนมาเรียนทั้งหมด</p>
+        <p id="stat-total-present" class="text-3xl font-bold text-emerald-600">-</p>
+       </div>
+       <div class="bg-white rounded-lg p-5 shadow-sm">
+        <p class="text-xs text-gray-500 font-medium mb-3">อัตราการมาเรียน</p>
+        <p id="stat-percentage" class="text-3xl font-bold text-teal-600">-</p>
+       </div>
+      </div>
+     </div>
+     <div id="table-wrap" class="hidden overflow-x-auto">
+      <table class="w-full text-sm">
+       <thead>
+        <tr class="border-b-2 border-gray-200 text-left">
+         <th class="py-2 px-2 font-semibold">วันที่</th>
+         <th class="py-2 px-2 font-semibold">ห้องเรียน</th>
+         <th class="py-2 px-2 font-semibold">ครู</th>
+         <th class="py-2 px-2 font-semibold text-center">ชาย</th>
+         <th class="py-2 px-2 font-semibold text-center">หญิง</th>
+         <th class="py-2 px-2 font-semibold text-center">รวม</th>
+         <th class="py-2 px-2 font-semibold text-center">%</th>
+         <th class="py-2 px-2"></th>
+        </tr>
+       </thead>
+       <tbody id="records-body"></tbody>
+      </table>
+     </div>
+    </div>
+   </section>
+  </main><!-- Limit/info warning toast -->
+  <div id="limit-warning" class="hidden fixed top-4 left-1/2 -translate-x-1/2 bg-amber-500 text-white px-6 py-3 rounded-xl shadow-lg z-50 text-sm font-semibold">
+   ⚠️ ข้อมูลเต็ม 999 รายการแล้ว กรุณาลบข้อมูลก่อน
+  </div><!-- Edit Attendance Modal -->
+  <div id="edit-modal" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+   <div class="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-96 overflow-auto">
+    <div class="p-6">
+     <h3 class="text-lg font-semibold mb-4">แก้ไขข้อมูล</h3>
+     <form id="edit-form" class="space-y-3">
+      <div><label class="block text-xs font-medium text-gray-600 mb-1">ห้องเรียน</label> <input id="edit-class-name" type="text" readonly class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm bg-gray-50 text-gray-600">
+      </div>
+      <div><label class="block text-xs font-medium text-gray-600 mb-1">วันที่</label> <input id="edit-date" type="text" readonly class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm bg-gray-50 text-gray-600">
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+       <div><label class="block text-xs font-medium text-gray-600 mb-1">ชายทั้งหมด</label> <input id="edit-boys-total" type="number" min="0" class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm">
+       </div>
+       <div><label class="block text-xs font-medium text-gray-600 mb-1">ชายมาเรียน</label> <input id="edit-boys-present" type="number" min="0" class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm">
+       </div>
+       <div><label class="block text-xs font-medium text-gray-600 mb-1">หญิงทั้งหมด</label> <input id="edit-girls-total" type="number" min="0" class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm">
+       </div>
+       <div><label class="block text-xs font-medium text-gray-600 mb-1">หญิงมาเรียน</label> <input id="edit-girls-present" type="number" min="0" class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm">
+       </div>
+      </div>
+      <div id="edit-error" class="hidden bg-red-50 border border-red-300 rounded px-3 py-2 text-xs text-red-700"></div>
+      <div class="flex gap-2 pt-4"><button type="submit" class="flex-1 bg-teal-600 text-white px-3 py-2 rounded font-semibold text-sm hover:bg-teal-700">บันทึก</button> <button type="button" onclick="closeEditModal()" class="flex-1 bg-gray-200 text-gray-700 px-3 py-2 rounded text-sm hover:bg-gray-300">ยกเลิก</button>
+      </div>
+     </form>
+    </div>
+   </div>
+  </div>
+  <script>
+    // ==================================================
+    // ตั้งค่า URL ของ Google Apps Script Web App ตรงนี้
+    // ตัวอย่าง: const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/xxxxxxxx/exec';
+    // ==================================================
+    const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbw_5gLifvdqsoD-di1h2YuzKrAbV2Ablwxoi0E9Cyt-t4cshIZYo1SuB9owOGtLbU3E/exec';
+
+    async function apiRequest(action, record = null) {
+      const payload = { action };
+      if (record) payload.record = record;
+
+      const response = await fetch(GAS_WEB_APP_URL, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+      });
+
+      if (!response.ok) throw new Error('เชื่อมต่อ Google Sheets ไม่สำเร็จ');
+      return response.json();
+    }
+
+    window.dataSdk = {
+      async init(handler) {
+        try {
+          const res = await apiRequest('read');
+          if (res.ok) {
+            handler.onDataChanged(res.data || []);
+            return { isOk: true };
+          }
+          return { isOk: false, error: res.message };
+        } catch (err) {
+          console.error(err);
+          return { isOk: false, error: err.message };
+        }
+      },
+      async create(record) {
+        try {
+          const res = await apiRequest('create', record);
+          if (res.ok) await window.dataSdk.init(handler);
+          return { isOk: !!res.ok, error: res.message, message: res.message };
+        } catch (err) {
+          console.error(err);
+          return { isOk: false, error: err.message };
+        }
+      },
+      async update(record) {
+        try {
+          const res = await apiRequest('update', record);
+          if (res.ok) await window.dataSdk.init(handler);
+          return { isOk: !!res.ok, error: res.message, message: res.message };
+        } catch (err) {
+          console.error(err);
+          return { isOk: false, error: err.message };
+        }
+      },
+      async delete(record) {
+        try {
+          const res = await apiRequest('delete', record);
+          if (res.ok) await window.dataSdk.init(handler);
+          return { isOk: !!res.ok, error: res.message, message: res.message };
+        } catch (err) {
+          console.error(err);
+          return { isOk: false, error: err.message };
+        }
+      }
+    };
+
+    let allRecords = [];
+    let classrooms = [];
+    let attendanceRecords = [];
+    let filteredRecords = null;
+    let pendingDeleteId = null;
+    let pendingDeleteClassroom = null;
+    let editingClassroom = null;
+    let editingAttendance = null;
+
+    function setTodayDate() {
+      // Use Bangkok timezone (UTC+7)
+      const now = new Date();
+      const offset = 7 * 60 * 60 * 1000;
+      const bangkokTime = new Date(now.getTime() + offset);
+      document.getElementById('att_date').value = bangkokTime.toISOString().slice(0, 10);
+    }
+    setTodayDate();
+    switchTab('record');
+    
+    // Reset date to today whenever user switches to record tab
+    const origSwitchTab = switchTab;
+    window.switchTab = function(t) {
+      origSwitchTab(t);
+      if (t === 'record') setTodayDate();
+    };
+
+    document.getElementById('class_name').addEventListener('change', function() {
+      const cls = classrooms.find(c => c.name === this.value);
+      document.getElementById('teacher_display').value = cls ? cls.teacher_name || '' : '';
+      validateAttendance();
+      updateDuplicateWarning();
+    });
+
+    document.getElementById('att_date').addEventListener('change', function() {
+      validateAttendance();
+      updateDuplicateWarning();
+    });
+
+    function validateAttendance() {
+      const bT = Number(document.getElementById('boys_total').value) || 0;
+      const bP = Number(document.getElementById('boys_present').value) || 0;
+      const gT = Number(document.getElementById('girls_total').value) || 0;
+      const gP = Number(document.getElementById('girls_present').value) || 0;
+      const eB = document.getElementById('error-boys');
+      const eG = document.getElementById('error-girls');
+      const vE = document.getElementById('validation-error');
+      const btn = document.querySelector('[data-template-id="submit-btn"]');
+      let err = false, msg = '';
+      if (bP > bT) { eB.classList.remove('hidden'); err = true; msg = 'จำนวนชายมาเรียนเกินจำนวนทั้งหมด'; } else { eB.classList.add('hidden'); }
+      if (gP > gT) { eG.classList.remove('hidden'); err = true; msg = 'จำนวนหญิงมาเรียนเกินจำนวนทั้งหมด'; } else { eG.classList.add('hidden'); }
+      if (err) {
+        vE.textContent = '❌ ' + msg;
+        vE.classList.remove('hidden');
+        btn.disabled = true;
+        btn.classList.add('opacity-60', 'cursor-not-allowed');
+      } else {
+        vE.classList.add('hidden');
+        btn.disabled = false;
+        btn.classList.remove('opacity-60', 'cursor-not-allowed');
+      }
+    }
+
+    const handler = {
+      onDataChanged(data) {
+        allRecords = data;
+        classrooms = data.filter(r => r.type === 'classroom').sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+        attendanceRecords = data.filter(r => r.type === 'attendance').sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+        populateDropdowns();
+        renderClassrooms();
+        if (filteredRecords !== null) applyFilters();
+        else renderTable(attendanceRecords);
+      }
+    };
+
+    function populateDropdowns() {
+      const cs = document.getElementById('class_name');
+      const fc = document.getElementById('filter-class');
+      const csVal = cs.value, fcVal = fc.value;
+      cs.innerHTML = '<option value="">-- เลือกห้องเรียน --</option>' + classrooms.map(c => `<option value="${esc(c.name)}">${esc(c.name)}${c.teacher_name ? ' — ' + esc(c.teacher_name) : ''}</option>`).join('');
+      fc.innerHTML = '<option value="">ทั้งหมด</option>' + classrooms.map(c => `<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
+      cs.value = csVal; fc.value = fcVal;
+      const cls = classrooms.find(c => c.name === csVal);
+      document.getElementById('teacher_display').value = cls ? cls.teacher_name || '' : '';
+    }
+
+    function switchTab(t) {
+      ['record', 'classrooms', 'list'].forEach(id => {
+        document.getElementById('panel-' + id).classList.toggle('hidden', id !== t);
+        const tab = document.getElementById('tab-' + id);
+        tab.classList.toggle('tab-active', id === t);
+        tab.classList.toggle('text-gray-500', id !== t);
+      });
+    }
+
+    function renderClassrooms() {
+      const list = document.getElementById('classroom-list');
+      const empty = document.getElementById('classroom-empty');
+      if (classrooms.length === 0) { list.innerHTML = ''; empty.classList.remove('hidden'); return; }
+      empty.classList.add('hidden');
+      list.innerHTML = classrooms.map(c => {
+        const isDel = pendingDeleteClassroom === c.__backendId;
+        const isEdit = editingClassroom === c.__backendId;
+        if (isEdit) {
+          return `<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-teal-50 border border-teal-200 rounded-lg px-3 py-2">
+            <input id="edit-cls-name-${c.__backendId}" type="text" value="${esc(c.name)}" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm">
+            <input id="edit-cls-teacher-${c.__backendId}" type="text" value="${esc(c.teacher_name || '')}" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm">
+            <span class="inline-flex gap-1">
+              <button onclick="saveEditClassroom('${c.__backendId}')" class="text-xs bg-teal-600 text-white px-3 py-1 rounded font-semibold">บันทึก</button>
+              <button onclick="editingClassroom=null;renderClassrooms()" class="text-xs bg-gray-200 px-3 py-1 rounded">ยกเลิก</button>
+            </span></div>`;
+        }
+        return `<div class="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
+          <div class="flex-1 min-w-0"><span class="text-sm font-semibold">${esc(c.name)}</span><span class="text-sm text-gray-500 ml-2">— ${esc(c.teacher_name || 'ไม่ระบุครู')}</span></div>
+          <span class="inline-flex gap-1 shrink-0">${isDel
+            ? `<button onclick="confirmDeleteClassroom('${c.__backendId}')" class="text-xs bg-red-500 text-white px-2 py-1 rounded">ยืนยัน</button><button onclick="pendingDeleteClassroom=null;renderClassrooms()" class="text-xs bg-gray-200 px-2 py-1 rounded">ยกเลิก</button>`
+            : `<button onclick="editingClassroom='${c.__backendId}';renderClassrooms()" class="text-gray-400 hover:text-teal-600"><i data-lucide="pencil" class="w-4 h-4"></i></button><button onclick="pendingDeleteClassroom='${c.__backendId}';renderClassrooms()" class="text-gray-400 hover:text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>`}
+          </span></div>`;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    async function addClassroom() {
+      const nI = document.getElementById('new-classroom');
+      const tI = document.getElementById('new-classroom-teacher');
+      const name = nI.value.trim(), teacher = tI.value.trim();
+      if (!name) return;
+      if (allRecords.length >= 999) { showLimitWarning(); return; }
+      nI.disabled = true; tI.disabled = true;
+      const res = await window.dataSdk.create({ type: 'classroom', name, teacher_name: teacher });
+      nI.disabled = false; tI.disabled = false;
+      if (res.isOk) { nI.value = ''; tI.value = ''; }
+    }
+
+    async function saveEditClassroom(id) {
+      const rec = classrooms.find(r => r.__backendId === id);
+      if (!rec) return;
+      const nEl = document.getElementById('edit-cls-name-' + id);
+      const tEl = document.getElementById('edit-cls-teacher-' + id);
+      if (!nEl || !tEl) return;
+      const nn = nEl.value.trim(), nt = tEl.value.trim();
+      if (!nn) return;
+      nEl.disabled = true; tEl.disabled = true;
+      await window.dataSdk.update({ ...rec, name: nn, teacher_name: nt });
+      editingClassroom = null;
+    }
+
+    async function confirmDeleteClassroom(id) {
+      const rec = classrooms.find(r => r.__backendId === id);
+      if (rec) await window.dataSdk.delete(rec);
+      pendingDeleteClassroom = null;
+    }
+
+    function applyFilters() {
+      const d = document.getElementById('filter-date').value;
+      const cls = document.getElementById('filter-class').value;
+      let f = attendanceRecords;
+      if (d) f = f.filter(r => normalizeDate(r.date) === d);
+      if (cls) f = f.filter(r => r.class_name === cls);
+      filteredRecords = f;
+      renderTable(f);
+    }
+
+    function clearFilters() {
+      document.getElementById('filter-date').value = '';
+      document.getElementById('filter-class').value = '';
+      filteredRecords = null;
+      renderTable(attendanceRecords);
+    }
+
+    async function refreshData() {
+      const btn = document.getElementById('refresh-btn');
+      const oldText = btn.innerHTML;
+
+      btn.disabled = true;
+      btn.style.opacity = '0.6';
+      btn.innerHTML = '<i data-lucide="loader" class="w-4 h-4"></i>กำลังรีเฟรช...';
+
+      try {
+        const result = await apiRequest('read');
+
+        if (result && result.ok && Array.isArray(result.data)) {
+          filteredRecords = null;
+          handler.onDataChanged(result.data);
+          renderTable(attendanceRecords);
+        } else {
+          showInlineMsg((result && result.message) || 'รีเฟรชข้อมูลไม่สำเร็จ');
+        }
+      } catch (err) {
+        console.error(err);
+        showInlineMsg('ไม่สามารถดึงข้อมูลจาก Google Sheets ได้');
+      } finally {
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.innerHTML = oldText;
+        lucide.createIcons();
+      }
+    }
+
+    function renderTable(records) {
+      const emptyState = document.getElementById('empty-state');
+      const tableWrap = document.getElementById('table-wrap');
+      const tbody = document.getElementById('records-body');
+      const statsCard = document.getElementById('stats-card');
+      if (!records || records.length === 0) {
+        emptyState.classList.remove('hidden'); tableWrap.classList.add('hidden'); statsCard.classList.add('hidden'); return;
+      }
+      emptyState.classList.add('hidden'); tableWrap.classList.remove('hidden');
+      updateStats(records);
+      // Use Bangkok timezone for date comparison
+      const bkNow = new Date();
+      const bkOffset = 7 * 60 * 60 * 1000;
+      const bkToday = new Date(bkNow.getTime() + bkOffset).toISOString().slice(0, 10);
+      tbody.innerHTML = records.map(rec => {
+        const pct = rec.percentage != null ? rec.percentage.toFixed(1) : '0';
+        const pctC = rec.percentage >= 80 ? 'text-emerald-600' : rec.percentage >= 60 ? 'text-amber-600' : 'text-red-600';
+        const isDel = pendingDeleteId === rec.__backendId;
+        const isToday = normalizeDate(rec.date) === bkToday;
+        return `<tr class="border-b border-gray-100 hover:bg-gray-50">
+          <td class="py-2.5 px-2 whitespace-nowrap">${formatDate(rec.date)}</td>
+          <td class="py-2.5 px-2 font-medium">${esc(rec.class_name)}</td>
+          <td class="py-2.5 px-2">${esc(rec.teacher_name)}</td>
+          <td class="py-2.5 px-2 text-center">${rec.boys_present}/${rec.boys_total}</td>
+          <td class="py-2.5 px-2 text-center">${rec.girls_present}/${rec.girls_total}</td>
+          <td class="py-2.5 px-2 text-center font-semibold">${rec.total_present}</td>
+          <td class="py-2.5 px-2 text-center font-bold ${pctC}">${pct}%</td>
+          <td class="py-2.5 px-2 text-right">${isDel
+            ? `<span class="inline-flex gap-1"><button onclick="confirmDelete('${rec.__backendId}')" class="text-xs bg-red-500 text-white px-2 py-1 rounded">ยืนยัน</button><button onclick="cancelDelete()" class="text-xs bg-gray-200 px-2 py-1 rounded">ยกเลิก</button></span>`
+            : `<span class="inline-flex gap-1 items-center">${isToday ? `<button onclick="openEditModal('${rec.__backendId}')" class="text-gray-400 hover:text-blue-600" title="แก้ไข"><i data-lucide="edit" class="w-4 h-4"></i></button>` : '<span class="w-4"></span>'}<button onclick="startDelete('${rec.__backendId}')" class="text-gray-400 hover:text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button></span>`}</td>
+        </tr>`;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    
+    function normalizeDate(value) {
+      if (!value) return '';
+
+      const str = String(value).trim();
+
+      // ถ้า Google Sheets ส่งกลับมาเป็น ISO เช่น 2026-05-15T17:00:00.000Z
+      // ให้แปลงเป็นวันที่ตามเวลาไทยก่อน เพื่อให้ตรงกับช่อง input type="date"
+      if (str.includes('T')) {
+        const dt = new Date(str);
+        if (!isNaN(dt.getTime())) {
+          const bangkok = new Date(dt.getTime() + (7 * 60 * 60 * 1000));
+          return bangkok.toISOString().slice(0, 10);
+        }
+      }
+
+      // ถ้าเป็น YYYY-MM-DD อยู่แล้ว ใช้ได้ทันที
+      if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+        return str;
+      }
+
+      return str;
+    }
+
+    function formatDate(d) {
+      const normalized = normalizeDate(d);
+
+      if (!normalized) return '-';
+
+      const parts = normalized.split('-');
+
+      if (parts.length === 3) {
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      }
+
+      return normalized;
+    }
+
+
+    function formatTodayLongThai() {
+      const now = new Date();
+      const day = now.getDate();
+      const monthNames = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+      const month = monthNames[now.getMonth()];
+      const year = now.getFullYear() + 543;
+      return `${day} ${month} ${year}`;
+    }
+
+
+    function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+
+    function updateStats(records) {
+      const sc = document.getElementById('stats-card');
+      if (!records || records.length === 0) { sc.classList.add('hidden'); return; }
+      sc.classList.remove('hidden');
+      let tBA = 0, tBP = 0, tGA = 0, tGP = 0;
+      records.forEach(r => { tBA += r.boys_total || 0; tBP += r.boys_present || 0; tGA += r.girls_total || 0; tGP += r.girls_present || 0; });
+      const tAll = tBA + tGA, tPres = tBP + tGP, pct = tAll > 0 ? Math.round((tPres / tAll) * 1000) / 10 : 0;
+      document.getElementById('stat-boys-total').textContent = tBA;
+      document.getElementById('stat-boys-present').textContent = tBP;
+      document.getElementById('stat-girls-total').textContent = tGA;
+      document.getElementById('stat-girls-present').textContent = tGP;
+      document.getElementById('stat-total-present').textContent = tPres;
+      document.getElementById('stat-percentage').textContent = pct.toFixed(1) + '%';
+    }
+
+    function startDelete(id) { pendingDeleteId = id; renderTable(filteredRecords || attendanceRecords); }
+    function cancelDelete() { pendingDeleteId = null; renderTable(filteredRecords || attendanceRecords); }
+    async function confirmDelete(id) { const rec = attendanceRecords.find(r => r.__backendId === id); if (rec) await window.dataSdk.delete(rec); pendingDeleteId = null; }
+
+    function openEditModal(id) {
+      const rec = attendanceRecords.find(r => r.__backendId === id);
+      if (!rec) return;
+      editingAttendance = id;
+      document.getElementById('edit-class-name').value = rec.class_name;
+      document.getElementById('edit-date').value = formatDate(rec.date);
+      document.getElementById('edit-boys-total').value = rec.boys_total || 0;
+      document.getElementById('edit-boys-present').value = rec.boys_present || 0;
+      document.getElementById('edit-girls-total').value = rec.girls_total || 0;
+      document.getElementById('edit-girls-present').value = rec.girls_present || 0;
+      document.getElementById('edit-error').classList.add('hidden');
+      document.getElementById('edit-modal').classList.remove('hidden');
+    }
+
+    function closeEditModal() {
+      document.getElementById('edit-modal').classList.add('hidden');
+      editingAttendance = null;
+    }
+
+    document.getElementById('edit-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const rec = attendanceRecords.find(r => r.__backendId === editingAttendance);
+      if (!rec) return;
+      const bT = Number(document.getElementById('edit-boys-total').value) || 0;
+      const bP = Number(document.getElementById('edit-boys-present').value) || 0;
+      const gT = Number(document.getElementById('edit-girls-total').value) || 0;
+      const gP = Number(document.getElementById('edit-girls-present').value) || 0;
+      const errEl = document.getElementById('edit-error');
+      if (bP > bT || gP > gT) { errEl.textContent = 'จำนวนมาเรียนต้องไม่เกินจำนวนเต็ม'; errEl.classList.remove('hidden'); return; }
+      const tp = bP + gP, ta = bT + gT, pct = ta > 0 ? Math.round((tp / ta) * 1000) / 10 : 0;
+      const btn = e.target.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      const res = await window.dataSdk.update({ ...rec, boys_total: bT, boys_present: bP, girls_total: gT, girls_present: gP, total_present: tp, percentage: pct });
+      btn.disabled = false;
+      if (res.isOk) closeEditModal();
+      else { errEl.textContent = 'เกิดข้อผิดพลาด'; errEl.classList.remove('hidden'); }
+    });
+
+    function isDuplicateRecord(className, date) {
+      return attendanceRecords.some(rec => rec.class_name === className && normalizeDate(rec.date) === date);
+    }
+
+    function updateDuplicateWarning() {
+      const cn = document.getElementById('class_name').value;
+      const date = document.getElementById('att_date').value;
+      const btn = document.querySelector('[data-template-id="submit-btn"]');
+      const vE = document.getElementById('validation-error');
+
+      if (cn && date && isDuplicateRecord(cn, date)) {
+        vE.textContent = '⚠️ ห้องนี้ได้ทำการบันทึกไปแล้ว';
+        vE.classList.remove('hidden');
+        btn.disabled = true;
+        btn.classList.add('opacity-60', 'cursor-not-allowed');
+        return true;
+      }
+
+      btn.disabled = false;
+      btn.classList.remove('opacity-60', 'cursor-not-allowed');
+      vE.classList.add('hidden');
+      return false;
+    }
+
+
+    function clearDuplicateWarning() {
+      const btn = document.querySelector('[data-template-id="submit-btn"]');
+      const vE = document.getElementById('validation-error');
+
+      if (vE) {
+        vE.textContent = '';
+        vE.classList.add('hidden');
+      }
+
+      if (btn) {
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.classList.remove('opacity-60', 'cursor-not-allowed');
+      }
+    }
+
+    document.getElementById('attendance-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const bP = Number(document.getElementById('boys_present').value) || 0;
+      const bT = Number(document.getElementById('boys_total').value) || 0;
+      const gP = Number(document.getElementById('girls_present').value) || 0;
+      const gT = Number(document.getElementById('girls_total').value) || 0;
+
+      if (bP > bT || gP > gT) {
+        showStatus('ข้อมูลไม่ถูกต้อง', true);
+        return;
+      }
+
+      const cn = document.getElementById('class_name').value;
+      const tn = document.getElementById('teacher_display').value;
+      const date = document.getElementById('att_date').value;
+
+      if (!cn) {
+        showStatus('กรุณาเลือกห้องเรียน', true);
+        return;
+      }
+
+      if (isDuplicateRecord(cn, date)) {
+        updateDuplicateWarning();
+        return;
+      }
+
+      if (allRecords.length >= 999) {
+        showLimitWarning();
+        return;
+      }
+
+      const btn = e.target.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      btn.style.opacity = '0.6';
+
+      const tp = bP + gP;
+      const ta = bT + gT;
+      const pct = ta > 0 ? Math.round((tp / ta) * 1000) / 10 : 0;
+
+      const payload = {
+        type: 'attendance',
+        class_name: cn,
+        teacher_name: tn,
+        date,
+        boys_total: bT,
+        boys_present: bP,
+        girls_total: gT,
+        girls_present: gP,
+        total_present: tp,
+        percentage: pct,
+        created_at: new Date().toISOString()
+      };
+
+      let res;
+      try {
+        // ใช้ apiRequest โดยตรง เพื่อไม่ให้ dataSdk.create รีโหลดข้อมูลก่อนฟอร์มถูกเคลียร์
+        const raw = await apiRequest('create', payload);
+        res = { isOk: !!raw.ok, message: raw.message || '', error: raw.message || '' };
+      } catch (err) {
+        res = { isOk: false, message: err.message || 'เกิดข้อผิดพลาด' };
+      }
+
+      btn.disabled = false;
+      btn.style.opacity = '1';
+
+      if (res.isOk) {
+        e.target.reset();
+
+        const bkNow = new Date();
+        const bkOffset = 7 * 60 * 60 * 1000;
+        const bkTime = new Date(bkNow.getTime() + bkOffset);
+
+        document.getElementById('att_date').value = bkTime.toISOString().slice(0, 10);
+        document.getElementById('class_name').value = '';
+        document.getElementById('teacher_display').value = '';
+
+        clearDuplicateWarning();
+        showStatus('บันทึกสำเร็จ ✓', false);
+
+        // รีเฟรชข้อมูลล่าสุดจาก Google Sheets แบบเงียบ ๆ
+        await refreshData();
+        clearDuplicateWarning();
+      } else {
+        // กรณี server กันข้อมูลซ้ำ จะไม่ขึ้นหลังบันทึกสำเร็จ เพราะไม่ใช่ res.isOk
+        showStatus(res.message || 'เกิดข้อผิดพลาด', true);
+        await refreshData();
+      }
+    });
+
+    function exportToPDF() {
+      const selectedDate = document.getElementById('filter-date').value;
+      if (!selectedDate) { showInlineMsg('กรุณาเลือกวันที่ที่ต้องการพิมพ์รายงาน PDF'); return; }
+
+      const selectedClass = document.getElementById('filter-class').value;
+      let recs = filteredRecords !== null ? filteredRecords : attendanceRecords.filter(r => normalizeDate(r.date) === selectedDate);
+      if (selectedClass && filteredRecords === null) recs = recs.filter(r => r.class_name === selectedClass);
+      if (recs.length === 0) { showInlineMsg('ไม่มีข้อมูลในวันที่เลือก'); return; }
+
+      const dateStr = formatDate(selectedDate);
+      const printDate = formatTodayLongThai();
+
+      let tBA = 0, tBP = 0, tGA = 0, tGP = 0, rows = '';
+      recs.forEach((rec, index) => {
+        tBA += rec.boys_total || 0;
+        tBP += rec.boys_present || 0;
+        tGA += rec.girls_total || 0;
+        tGP += rec.girls_present || 0;
+        const totalAll = (rec.boys_total || 0) + (rec.girls_total || 0);
+        const totalPresent = rec.total_present || 0;
+        const p = rec.percentage != null ? Number(rec.percentage).toFixed(1) : '0.0';
+
+        rows += `<tr>
+          <td>${index + 1}</td>
+          <td class="left">${esc(rec.class_name)}</td>
+          <td class="left">${esc(rec.teacher_name)}</td>
+          <td>${rec.boys_total || 0}</td>
+          <td>${rec.boys_present || 0}</td>
+          <td>${rec.girls_total || 0}</td>
+          <td>${rec.girls_present || 0}</td>
+          <td>${totalAll}</td>
+          <td>${totalPresent}</td>
+          <td>${p}%</td>
+        </tr>`;
+      });
+
+      const tAll = tBA + tGA;
+      const tPres = tBP + tGP;
+      const oPct = tAll > 0 ? Math.round((tPres / tAll) * 1000) / 10 : 0;
+
+      const reportHtml = `<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>รายงานสถิติการมาเรียน</title>
+  <style>
+    @page { size: A4 landscape; margin: 14mm; }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "TH Sarabun New", "Sarabun", "Noto Sans Thai", Arial, sans-serif;
+      color: #111827;
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.35;
+    }
+    .report {
+      width: 100%;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 14px;
+      line-height: 1.35;
+    }
+    .header h1 {
+      font-size: 26px;
+      margin: 0 0 4px;
+      font-weight: 700;
+    }
+    .header p {
+      margin: 2px 0;
+      font-size: 18px;
+    }
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      margin: 10px 0 8px;
+      font-size: 16px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+    th, td {
+      border: 1px solid #374151;
+      padding: 6px 5px;
+      text-align: center;
+      vertical-align: middle;
+      word-wrap: break-word;
+    }
+    th {
+      background: #e5f5f3;
+      font-weight: 700;
+    }
+    td.left {
+      text-align: left;
+    }
+    .total-row td {
+      background: #f3f4f6;
+      font-weight: 700;
+    }
+    .summary {
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      font-size: 16px;
+    }
+    .summary div {
+      border: 1px solid #9ca3af;
+      padding: 8px;
+      border-radius: 6px;
+      text-align: center;
+    }
+    .signatures {
+      margin-top: 34px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      text-align: center;
+      font-size: 16px;
+    }
+    .no-print {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      display: flex;
+      gap: 8px;
+    }
+    .no-print button {
+      border: 0;
+      border-radius: 8px;
+      padding: 9px 14px;
+      font-size: 14px;
+      cursor: pointer;
+      color: white;
+      background: #0d9488;
+    }
+    .no-print button.close {
+      background: #64748b;
+    }
+    @media print {
+      .no-print { display: none; }
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print">
+    <button onclick="window.print()">บันทึก/พิมพ์เป็น PDF</button>
+    <button class="close" onclick="window.close()">ปิด</button>
+  </div>
+
+  <div class="report">
+    <div class="header">
+      <h1>รายงานสถิติการมาเรียน</h1>
+      <p>โรงเรียนอนุบาลจุมพลโพนพิสัย</p>
+      <p>สำนักงานเขตพื้นที่การศึกษาประถมศึกษาหนองคาย เขต 2</p>
+    </div>
+
+    <div class="meta">
+      <div><strong>ประจำวันที่:</strong> ${dateStr}</div>
+      <div><strong>วันที่พิมพ์รายงาน:</strong> ${printDate}</div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 5%;">ลำดับ</th>
+          <th style="width: 12%;">ห้องเรียน</th>
+          <th style="width: 18%;">ครูประจำชั้น</th>
+          <th>ชายทั้งหมด</th>
+          <th>ชายมาเรียน</th>
+          <th>หญิงทั้งหมด</th>
+          <th>หญิงมาเรียน</th>
+          <th>รวมทั้งหมด</th>
+          <th>มาเรียนรวม</th>
+          <th>ร้อยละ</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows}
+        <tr class="total-row">
+          <td colspan="3">รวมทั้งสิ้น</td>
+          <td>${tBA}</td>
+          <td>${tBP}</td>
+          <td>${tGA}</td>
+          <td>${tGP}</td>
+          <td>${tAll}</td>
+          <td>${tPres}</td>
+          <td>${oPct.toFixed(1)}%</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="summary">
+      <div><strong>นักเรียนทั้งหมด</strong><br>${tAll} คน</div>
+      <div><strong>มาเรียนทั้งหมด</strong><br>${tPres} คน</div>
+      <div><strong>ขาดเรียนทั้งหมด</strong><br>${tAll - tPres} คน</div>
+      <div><strong>อัตราการมาเรียน</strong><br>${oPct.toFixed(1)}%</div>
+    </div>
+
+    <div class="signatures">
+      <div>
+        ลงชื่อ................................................ผู้รายงาน<br>
+        (................................................)
+      </div>
+      <div>
+        ลงชื่อ................................................ผู้รับรอง<br>
+        (................................................)
+      </div>
+    </div>
+  </div>
+
+  <script>
+    window.addEventListener('load', () => {
+      setTimeout(() => window.print(), 400);
+    });
+  <\/script>
+</body>
+</html>`;
+
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        showInlineMsg('เบราว์เซอร์บล็อกหน้าต่างพิมพ์ กรุณาอนุญาต Pop-up');
+        return;
+      }
+      printWindow.document.open();
+      printWindow.document.write(reportHtml);
+      printWindow.document.close();
+    }
+
+    function showInlineMsg(msg) {
+      const w = document.getElementById('limit-warning');
+      w.textContent = '⚠️ ' + msg; w.classList.remove('hidden');
+      setTimeout(() => { w.classList.add('hidden'); w.textContent = '⚠️ ข้อมูลเต็ม 999 รายการแล้ว กรุณาลบข้อมูลก่อน'; }, 3000);
+    }
+
+    function showLimitWarning() {
+      const w = document.getElementById('limit-warning');
+      w.classList.remove('hidden');
+      setTimeout(() => w.classList.add('hidden'), 3000);
+    }
+
+    const formStatus = document.getElementById('form-status');
+    function showStatus(msg, isError) {
+      formStatus.textContent = msg;
+      formStatus.className = `text-sm ${isError ? 'text-red-600' : 'text-emerald-600'}`;
+      formStatus.classList.remove('hidden');
+      setTimeout(() => formStatus.classList.add('hidden'), 3000);
+    }
+
+    (async () => {
+      const r = await window.dataSdk.init(handler);
+      if (!r.isOk) showInlineMsg('ไม่สามารถเชื่อมต่อฐานข้อมูลได้');
+      lucide.createIcons();
+    })();
+  </script>
+</body>
+</html>
